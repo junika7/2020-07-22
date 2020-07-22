@@ -23,21 +23,28 @@ class FASTA: #FASTA 형식에 적용할 class 설정
 
 class FASTQ: #FASTQ 형식에 적용할 class 설정
     def __init__(self, file_name): #초기화 메소드
-        self.file_name = file_name #속성 2개 지정
+        self.file_name = file_name #속성 4개 지정
         self.read_num = 0
+        self.count = {}
+        self.length = 0
     def count_read_num(self): #read 수를 계산하는 메소드
-        cnt = 0 #cnt 변수를 0으로 설정
+        line_cnt = 0 #line_cnt 변수를 0으로 설정
         with open(self.file_name, 'r') as handle:
-            for line in handle: #line을 한줄 씩 받아서 cnt=0으로 시작
-                if cnt % 4 == 0: #cnt를 4로 나눈 나머지가 0이면 
+            for line in handle: #line을 한줄 씩 받아서 line_cnt=0으로 시작
+                if line_cnt % 4 == 0: #cnt를 4로 나눈 나머지가 0이면 
                     header = line.strip() #line을 strip해서 header로 저장하고
                     self.read_num += 1 #self.read_num에 1을 더함
-                elif cnt % 4 == 1: #만약 cnt를 4로 나눈 나머지가 1이면
+                elif line_cnt % 4 == 1: #만약 cnt를 4로 나눈 나머지가 1이면
                     seq = line.strip() #line을 strip해서 seq으로 저장(sequence에 해당하는 줄이므로)
-                elif cnt % 4 == 3: #만약 cnt를 4로 나눈 나머지가 3이면
+                    self.length += len(seq) #총 염기의 개수 구하기(sequence인 줄의 length를 전부 더함)
+                    for i in seq: #self.count라는 딕셔너리를 이용해서 염기 개수 세는 과정
+                        if i in self.count:
+                            self.count[i] += 1
+                        else:
+                            self.count[i] = 1
+                elif line_cnt % 4 == 3: #만약 cnt를 4로 나눈 나머지가 3이면
                     qual = line.strip() #line을 strip해서 qualfh 저장(quality에 해당하는 줄이므로)
-                cnt += 1 #cnt에 1을 더하고 for문 반복(나머지가 2인것은 +(구분자)이므로 의미없어서 버림)
-
+                line_cnt += 1 #cnt에 1을 더하고 for문 반복(나머지가 2인것은 +(구분자)이므로 의미없어서 버림)
 if __name__ == "__main__": #import해서 사용시 이 밑으로는 실행되지 않음
     if len(sys.argv) != 2:
         print(f"#usage: python {sys.argv[0]} [fasta]")
@@ -46,3 +53,5 @@ if __name__ == "__main__": #import해서 사용시 이 밑으로는 실행되지
     t = FASTQ(file_name)
     t.count_read_num()
     print(t.read_num)
+    print(t.count) #각 염기의 개수 딕셔너리로 출력
+    print(t.length) #총 염기의 개수 출력
